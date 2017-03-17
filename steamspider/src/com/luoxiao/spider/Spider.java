@@ -27,10 +27,13 @@ public class Spider {
 
 	// 得到用户个人资料链接
 	public List<String> getUserUrls(String gameUrl) throws IOException {
-		org.jsoup.Connection conn = Jsoup.connect(gameUrl);
+		String gameId = gameUrl.split("/")[4];
+		String reviewsUrl = "http://steamcommunity.com/app/"+gameId+"/reviews/";
+		//System.out.println(reviewsUrl);
+		org.jsoup.Connection conn = Jsoup.connect(reviewsUrl);
 		String realLink;
 		Document doc = conn.get();
-		Elements links = doc.select(".persona_name >a");
+		Elements links = doc.select(".apphub_CardContentAuthorName >a");
 		List<String> realUrls = new ArrayList<String>();
 		for (Element link : links) {
 			realLink = link.attr("href");
@@ -46,14 +49,15 @@ public class Spider {
 		Statement stmt;
 		Spider demo = new Spider();
 		UserBean bean = new UserBean();
-		// gameUrl = "http://store.steampowered.com/app/374320";
 		List<String> userUrls = demo.getUserUrls(gameUrl);
+		//System.out.println(userUrls);
 		for (String userUrl : userUrls) {
 			org.jsoup.Connection conn = Jsoup.connect(userUrl).timeout(4000);
 			Document doc = conn.get();
 			// 获取昵称
 			Elements nickNames = doc.select(".actual_persona_name");
 			String nickName = nickNames.text();
+			System.out.println(nickName);
 			bean.setUsername(nickName);
 			// 获取等级
 			Elements accountsLv = doc.select(".persona_level");
@@ -68,7 +72,7 @@ public class Spider {
 			String ownedGames = gameCount.text();
 			// 存入数据库
 			bean.setOwned_games(ownedGames);
-			String sql = "INSERT INTO STEAM_SPIDER( username,accountLv,owned_games) VALUES ('"
+			String sql = "INSERT INTO STEAM_SPIDER( username,accountLv,ownedGames) VALUES ('"
 					+ bean.getUsername()
 					+ "','"
 					+ bean.getAccountLv()
@@ -110,11 +114,18 @@ public class Spider {
 		//i为总图片数
 		for (int i = 1; i <= urls.size(); i++) {
 			String imageUrl = urls.get(i - 1);
+			System.out.println(imageUrl);
+			String folderName = imageUrl.split("/")[5];
 			URL url = new URL(imageUrl);
+			System.out.println(folderName);
+			
 			// 打开网络输入流
 			DataInputStream dis = new DataInputStream(url.openStream());
+			
+			File file = new File("W:/steamspider/"+folderName);
+			file.mkdirs();
 			//自定义保存地址，命名图片
-			String newImageName = "W:/steamspider/" + "图片" + i + ".jpg";
+			String newImageName = "W:/steamspider/"+folderName+"/"+"图片" + i + ".jpg";
 			// 建立一个新的文件
 			FileOutputStream fos = new FileOutputStream(new File(newImageName));
 			byte[] buffer = new byte[8000];
