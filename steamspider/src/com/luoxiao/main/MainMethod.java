@@ -14,7 +14,7 @@ public class MainMethod {
 			ClassNotFoundException, SQLException {
 		Spider demo = new Spider();
 
-		String gameUrl = "http://store.steampowered.com/app/374320";
+		String gameUrl = "http://store.steampowered.com/app/374320/";
 		// 获取并存储用户基本资料
 		demo.getAndSave(gameUrl);
 		// 下载商店页面的游戏图片
